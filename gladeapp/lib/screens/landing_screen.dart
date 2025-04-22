@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_button.dart';
+import 'login_screen.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({Key? key}) : super(key: key);
@@ -19,25 +20,25 @@ class LandingScreen extends StatelessWidget {
                 width: 124,
                 height: 118,
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 5),
               Text(
                 'Glade',
-                style: AppTheme.titleStyle.copyWith(
-                  fontSize: AppTheme.getResponsiveFontSize(context, 48),
-                ),
+                style: AppTextStyle.titleStyle,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               Text(
                 'Track. Progress. Achieve.',
-                style: AppTheme.subtitleStyle.copyWith(
-                  fontSize: AppTheme.getResponsiveFontSize(context, 18),
-                ),
+                style: AppTextStyle.subtitleStyle,
               ),
               const SizedBox(height: 40),
-              CustomButton(
+              GetStartedButton(
                 text: 'Get Started',
                 onPressed: () {
-                  // Handle button press
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                  );
                 },
               ),
             ],
