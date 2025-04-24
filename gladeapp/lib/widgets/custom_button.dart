@@ -92,3 +92,40 @@ class CreateAccountButton extends StatelessWidget {
     );
   }
 }
+
+class SubSettingsActionButton extends StatelessWidget {
+  final String buttonName;
+  final VoidCallback onPressed;
+
+  const SubSettingsActionButton({
+    Key? key,
+    required this.buttonName,
+    required this.onPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.primaryPurple,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          buttonName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Roboto',
+          ),
+        ),
+      ),
+    );
+  }
+}

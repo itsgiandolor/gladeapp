@@ -5,6 +5,7 @@ class AppTheme {
   static const Color secondaryPurple = Color(0xFF673AB7);
   static const Color backgroundColor = Color(0xFFEDE7F6);
   static const Color inputBackground = Color(0xFFD9D9D9);
+  static const Color togglePurple = Color(0xFF5856D6);
   static const Color white = Colors.white;
   static const Color black = Colors.black;
   static const Color grey = Color(0xFF828282);
@@ -75,6 +76,33 @@ class AppTextStyle {
   static const TextStyle actionCardSubtitle = TextStyle(
     fontFamily: 'Roboto',
     fontSize: 13,
+    color: AppTheme.grey,
+  );
+  static const TextStyle title = TextStyle(
+    fontFamily: 'Roboto',
+    fontSize: 20,
+    fontWeight: FontWeight.w400,
+    color: Colors.white,
+  );
+
+  static const TextStyle card = TextStyle(
+    fontFamily: 'Roboto',
+    fontSize: 20,
+    fontWeight: FontWeight.w400,
+    color: Colors.black,
+  );
+
+  static const TextStyle label = TextStyle(
+    fontFamily: 'Roboto',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: Colors.black,
+  );
+
+  static const TextStyle timeText = TextStyle(
+    fontFamily: 'Roboto',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
     color: AppTheme.grey,
   );
 }

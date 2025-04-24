@@ -57,8 +57,7 @@ class SettingsTopNavbar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppTheme.primaryPurple,
       elevation: 0,
       automaticallyImplyLeading: true,
-      iconTheme: const IconThemeData(
-          color: AppTheme.white), // Optional: shows back button
+      iconTheme: const IconThemeData(color: AppTheme.white),
       title: const Text(
         'Settings',
         style: TextStyle(
@@ -111,6 +110,35 @@ class TasksTopNavbar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class SubSettingsTopNavbar extends StatelessWidget
+    implements PreferredSizeWidget {
+  final String title;
+
+  const SubSettingsTopNavbar({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: AppTheme.primaryPurple,
+      automaticallyImplyLeading: true,
+      iconTheme: const IconThemeData(color: AppTheme.white),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: AppTheme.white,
+          fontSize: 20,
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      elevation: 0,
     );
   }
 }

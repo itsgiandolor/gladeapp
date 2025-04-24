@@ -88,3 +88,72 @@ class RegisterInputField extends StatelessWidget {
     );
   }
 }
+
+class ChangePasswordInputField extends StatelessWidget {
+  final String label;
+  final bool obscureText;
+  final TextEditingController controller; // Add this line
+
+  const ChangePasswordInputField({
+    Key? key,
+    required this.label,
+    required this.obscureText,
+    required this.controller, // Add this line
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller, // Set controller here
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: AppTheme.primaryPurple,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(
+            color: AppTheme.primaryPurple,
+            width: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ManageEmailInputField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+
+  const ManageEmailInputField({
+    Key? key,
+    required this.label,
+    required this.controller,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: AppTheme.primaryPurple,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(
+            color: AppTheme.primaryPurple,
+            width: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}

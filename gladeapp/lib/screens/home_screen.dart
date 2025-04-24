@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/top_navbar.dart';
-import '../widgets/daily_streak.dart';
+import '../widgets/nonreusable_widgets.dart';
 import '../theme/app_theme.dart';
 import '../widgets/bottom_navbar.dart';
-import 'settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
