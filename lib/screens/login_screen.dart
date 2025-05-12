@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailOrUsernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _passwordVisible = false; // To toggle password visibility
 
   @override
   void dispose() {
@@ -83,17 +84,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Login Error'),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
         content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+        backgroundColor: Colors.red,
       ),
     );
   }
@@ -124,12 +118,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 LoginInputField(
                   label: 'Username or Email',
                   controller: emailOrUsernameController,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 20),
                 LoginInputField(
                   label: 'Password',
-                  obscureText: true,
+                  obscureText: !_passwordVisible,
                   controller: passwordController,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisible = !_passwordVisible;
+                      });
+                    },
+                  ),
                 ),
                 const SizedBox(height: 30),
                 InkWell(
@@ -142,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   child: Container(
                     width: 250,
-                    height: 29,
+                    height: 50, // Increased height for better accessibility
                     decoration: BoxDecoration(
                       color: const Color(0xFF673AB7),
                       borderRadius: BorderRadius.circular(30),
@@ -156,8 +161,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 color: Colors.white,
                                 fontFamily: 'Roboto',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
+                                fontSize: 16, // Slightly larger font size
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                     ),
@@ -172,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         color: Color(0xFF512DA8),
                         fontFamily: 'Roboto',
-                        fontSize: 12,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -190,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           color: Color(0xFF512DA8),
                           fontFamily: 'Roboto',
-                          fontSize: 12,
+                          fontSize: 15,
                           decoration: TextDecoration.underline,
                         ),
                       ),

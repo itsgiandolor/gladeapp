@@ -15,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String username = 'User'; // Default until fetched
+  bool _isLoading = true; // Loading state for fetching username
+  int taskCount = 3; // Example task count (dynamic)
 
   @override
   void initState() {
@@ -30,10 +32,18 @@ class _HomeScreenState extends State<HomeScreen> {
         if (doc.exists && doc.data()!.containsKey('username')) {
           setState(() {
             username = doc['username'];
+            _isLoading = false; // Set loading to false after data is fetched
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
           });
         }
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       print('Failed to fetch username: $e');
     }
   }
@@ -57,29 +67,33 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 20),
-                      Text(
-                        'Welcome back, $username!',
-                        style: AppTextStyle.welcomeText,
-                      ),
+                      _isLoading
+                          ? const CircularProgressIndicator() // Show loading spinner
+                          : Text(
+                              'Welcome back, $username!',
+                              style: AppTextStyle.welcomeText,
+                            ),
                       const SizedBox(height: 20),
                       const Center(child: DailyStreakCard()),
                       const SizedBox(height: 20),
                       ActionCard(
                         title: 'Tasks',
-                        subtitle: 'You have 3 pending tasks!',
-                        icon: buildIcon(Icons.assignment),
+                        subtitle: taskCount > 0
+                            ? 'You have $taskCount pending tasks!'
+                            : 'No tasks pending!',
+                        icon: IconWidget(iconData: Icons.assignment),
                       ),
                       ActionCard(
                         title: 'Leaderboard',
                         subtitle: 'You ranked #5 last week!',
-                        icon: buildIcon(Icons.leaderboard),
+                        icon: IconWidget(iconData: Icons.leaderboard),
                       ),
                       ActionCard(
                         title: 'Achievements',
                         subtitle: 'You earned 3 new badges!',
-                        icon: buildIcon(Icons.emoji_events),
+                        icon: IconWidget(iconData: Icons.emoji_events),
                       ),
-                      const SizedBox(height: 40), // Give breathing room at the bottom
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -88,13 +102,19 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
-
-
       bottomNavigationBar: const BottomNavigation(currentIndex: 0),
     );
   }
+}
 
-  Widget buildIcon(IconData iconData) {
+// Reusable IconWidget for ActionCards
+class IconWidget extends StatelessWidget {
+  final IconData iconData;
+
+  const IconWidget({required this.iconData});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,

@@ -25,3 +25,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/glade_logo.png
+    - assets/logo_nobg.png

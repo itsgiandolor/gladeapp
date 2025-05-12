@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
 // Home Screen Widgets
 class DailyStreakCard extends StatefulWidget {
   const DailyStreakCard({super.key});
@@ -225,24 +226,33 @@ class ActionCard extends StatelessWidget {
 }
 
 // Task Screen Widgets
-class TaskCard extends StatefulWidget {
+class Task {
   final String taskName;
   final String subjectCode;
-  final String activityType; // New parameter for type of activity
-  final String deadline; // New parameter for deadline
+  final String activityType; // Type of activity (Quiz, Exam, Project)
+  final String deadline; // Task deadline
   final String imageUrl;
-  final bool isChecked;
-  final ValueChanged<bool?> onCheckChanged;
-  final VoidCallback onDelete;
+  final bool isChecked; // Whether the task is completed
 
-  const TaskCard({
-    super.key,
+  Task({
     required this.taskName,
     required this.subjectCode,
     required this.activityType,
     required this.deadline,
     required this.imageUrl,
-    required this.isChecked,
+    this.isChecked = false,
+  });
+}
+
+
+class TaskCard extends StatefulWidget {
+  final Task task;
+  final ValueChanged<bool?> onCheckChanged;
+  final VoidCallback onDelete;
+
+  const TaskCard({
+    super.key,
+    required this.task,
     required this.onCheckChanged,
     required this.onDelete,
   });
@@ -273,7 +283,7 @@ class _TaskCardState extends State<TaskCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.taskName,
+                    widget.task.taskName,
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 20,
@@ -283,7 +293,7 @@ class _TaskCardState extends State<TaskCard> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    widget.subjectCode,
+                    widget.task.subjectCode,
                     style: const TextStyle(
                       color: Color(0xFF828282),
                       fontSize: 13,
@@ -294,14 +304,19 @@ class _TaskCardState extends State<TaskCard> {
                 ],
               ),
               Checkbox(
-                value: widget.isChecked,
-                onChanged: widget.onCheckChanged,
+                value: widget.task.isChecked,
+                onChanged: (value) {
+                  setState(() {
+                    widget.task.isChecked = value ?? false; // Update task state
+                  });
+                  widget.onCheckChanged(value); // Notify parent widget
+                },
               ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
-            widget.activityType,
+            widget.task.activityType,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 10),
@@ -309,7 +324,7 @@ class _TaskCardState extends State<TaskCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Deadline: ${widget.deadline}',
+                'Deadline: ${widget.task.deadline}',
                 style:
                     const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
@@ -324,6 +339,8 @@ class _TaskCardState extends State<TaskCard> {
     );
   }
 }
+
+
 
 // Settings > Task Reminders Widgets
 class TimePickerField extends StatelessWidget {

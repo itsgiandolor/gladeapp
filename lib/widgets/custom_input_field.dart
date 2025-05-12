@@ -5,12 +5,16 @@ class LoginInputField extends StatelessWidget {
   final String label;
   final bool obscureText;
   final TextEditingController controller;
+  final TextInputType keyboardType;
+  final Widget? suffixIcon;  // Added the suffixIcon property
 
   const LoginInputField({
     super.key,
     required this.label,
     this.obscureText = false,
     required this.controller,
+    this.keyboardType = TextInputType.text,  // Default to TextInputType.text
+    this.suffixIcon,  // Optional suffixIcon
   });
 
   @override
@@ -18,6 +22,7 @@ class LoginInputField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: obscureText,
+      keyboardType: keyboardType,  // Use the passed keyboardType
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(
@@ -32,10 +37,12 @@ class LoginInputField extends StatelessWidget {
             width: 1,
           ),
         ),
+        suffixIcon: suffixIcon,  // Use the passed suffixIcon
       ),
     );
   }
 }
+
 
 class RegisterInputField extends StatelessWidget {
   final String label;

@@ -8,6 +8,10 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double logoWidth = MediaQuery.of(context).size.width * 0.4;  // Adjust width as needed
+    double logoHeight = MediaQuery.of(context).size.height * 0.2;  // Adjust height as needed
+    double verticalSpacing = MediaQuery.of(context).size.height * 0.05;
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: Center(
@@ -15,22 +19,22 @@ class LandingScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.network(
-                'https://cdn.builder.io/api/v1/image/assets/TEMP/f0b54afcf688c3e1fbe6256a37a5d988c73e29bf?placeholderIfAbsent=true',
-                width: 124,
-                height: 118,
+              Image.asset(
+                'assets/logo_nobg.png',
+                width: logoWidth,
+                height: logoHeight,
               ),
-              const SizedBox(height: 5),
+              SizedBox(height: verticalSpacing),
               Text(
                 'Glade',
                 style: AppTextStyle.titleStyle,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: verticalSpacing),
               Text(
                 'Track. Progress. Achieve.',
                 style: AppTextStyle.subtitleStyle,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: verticalSpacing * 2),
               GetStartedButton(
                 text: 'Get Started',
                 onPressed: () {
