@@ -5,32 +5,27 @@ class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Add user to Firestore
+  // Add user metadata to Firestore after Auth registration
   Future<void> addUser({
+    required String uid,
     required String username,
     required String email,
-    required String password,
     required String yearLevel,
     required String department,
   }) async {
     try {
-      // Create a new user document in Firestore
-      await _db.collection('users').add({
+      await _db.collection('users').doc(uid).set({
         'username': username,
         'email': email,
-        'password': password,
         'yearLevel': yearLevel,
         'department': department,
         'createdAt': FieldValue.serverTimestamp(),
       });
-
-      // Register the user with Firebase Authentication
-      await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
     } catch (e) {
       print('Error adding user: $e');
     }
   }
+
 
   // Check if the username already exists in Firestore
   Future<bool> isUsernameTaken(String username) async {
@@ -49,8 +44,10 @@ class DatabaseService {
   // Check if the email already exists in Firestore
   Future<bool> isEmailTaken(String email) async {
     try {
-      var result =
-          await _db.collection('users').where('email', isEqualTo: email).get();
+      var result = await _db
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
       return result.docs.isNotEmpty;
     } catch (e) {
       print('Error checking email: $e');
@@ -64,11 +61,8 @@ class DatabaseService {
     required String password,
   }) async {
     try {
-      // Attempt to sign in with Firebase Authentication
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(email: email, password: password);
       return userCredential;
     } catch (e) {
       print('Login failed: $e');

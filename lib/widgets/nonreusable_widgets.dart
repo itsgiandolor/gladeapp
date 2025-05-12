@@ -1,21 +1,110 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Home Screen Widgets
-class DailyStreakCard extends StatelessWidget {
+class DailyStreakCard extends StatefulWidget {
   const DailyStreakCard({super.key});
+
+  @override
+  _DailyStreakCardState createState() => _DailyStreakCardState();
+}
+
+class _DailyStreakCardState extends State<DailyStreakCard> {
+  int streak = 0;
+  DateTime? lastCheckedIn;
+  bool isLoading = false; // Track loading state
+  bool isCheckedInToday = false; // Track if user has checked in today
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStreakData();
+  }
+
+  // Fetch the streak data from Firestore
+  Future<void> _fetchStreakData() async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        setState(() {
+          streak = doc['streak'] ?? 0;
+          lastCheckedIn = (doc['lastCheckedIn'] as Timestamp?)?.toDate();
+          isCheckedInToday = _isSameDay(DateTime.now(), lastCheckedIn!);
+          isLoading = false; // Stop loading
+        });
+      } else {
+        // Create the document if it doesn't exist
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'streak': 0,
+          'lastCheckedIn': Timestamp.fromDate(DateTime.now()), // Set the current date
+        });
+        setState(() {
+          streak = 0;
+          lastCheckedIn = DateTime.now();
+          isCheckedInToday = false; // Not checked in yet
+          isLoading = false; // Stop loading
+        });
+      }
+    }
+  }
+
+  // Handle the "Check In Today" button press
+  Future<void> _handleCheckIn() async {
+    final today = DateTime.now();
+
+    // If there is no last check-in date or if it's a new day
+    setState(() {
+      if (lastCheckedIn != null && today.difference(lastCheckedIn!).inDays > 1) {
+        // Streak is broken, reset it
+        streak = 1;
+      } else {
+        // Continue the streak
+        streak += 1;
+      }
+      isCheckedInToday = true; // Mark as checked in today
+    });
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      setState(() {
+        isLoading = true; // Start loading
+      });
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'streak': streak,
+        'lastCheckedIn': Timestamp.fromDate(today),
+      });
+      setState(() {
+        lastCheckedIn = today;
+        isLoading = false; // Stop loading
+      });
+    }
+  }
+
+  // Helper function to check if two dates are the same day
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: AppDimensions.cardWidth,
-      height: AppDimensions.streakCardHeight,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text('Daily Streak', style: AppTextStyle.cardTitle),
           const SizedBox(height: 20),
@@ -26,18 +115,24 @@ class DailyStreakCard extends StatelessWidget {
               color: AppTheme.primaryPurple,
               shape: BoxShape.circle,
             ),
-            child: const Center(
-              child: Text('1', style: AppTextStyle.streakNumber),
+            child: Center(
+              child: isLoading
+                  ? const CircularProgressIndicator() // Show loading spinner
+                  : Text(
+                      '$streak',
+                      style: AppTextStyle.streakNumber,
+                    ),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Keep your streak going by checking in daily!',
             style: AppTextStyle.streakDescription,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: isLoading || isCheckedInToday ? null : _handleCheckIn, // Disable button if checked in today or loading
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryPurple,
               minimumSize: const Size(145, 42),
@@ -46,7 +141,11 @@ class DailyStreakCard extends StatelessWidget {
               ),
             ),
             child: Text(
-              'Check In Today',
+              isLoading
+                  ? 'Updating...'
+                  : isCheckedInToday
+                      ? 'Already Checked In'
+                      : 'Check In Today', // Change text based on status
               style: AppTextStyle.streakDescription.copyWith(
                 color: AppTheme.white,
                 fontWeight: FontWeight.w600,
@@ -58,6 +157,10 @@ class DailyStreakCard extends StatelessWidget {
     );
   }
 }
+
+
+
+
 
 class ActionCard extends StatelessWidget {
   final String title;

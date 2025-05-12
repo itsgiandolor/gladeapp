@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import 'login_screen.dart';
 import '../widgets/custom_dropdown.dart';
 import '../database/database_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -18,8 +19,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   String? selectedYearLevel;
   String? selectedDepartment;
@@ -39,71 +39,90 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   bool isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     return emailRegex.hasMatch(email);
   }
 
   bool areLengthsValid() {
-    return emailController.text.length <= 100 &&
-        passwordController.text.length <= 50;
+    return emailController.text.length <= 100 && passwordController.text.length <= 50;
   }
 
+  bool isUsernameLengthValid(String username) {
+    return username.length >= 1 && username.length <= 10;
+  }
+
+
   Future<void> handleRegister() async {
-    if (!areFieldsFilled()) {
-      showError('All fields are required.');
-      return;
-    }
+  if (!areFieldsFilled()) {
+    showError('All fields are required.');
+    return;
+  }
 
-    if (!isValidEmail(emailController.text.trim())) {
-      showError('Please enter a valid email address.');
-      return;
-    }
+  if (!isValidEmail(emailController.text.trim())) {
+    showError('Please enter a valid email address.');
+    return;
+  }
 
-    if (!doPasswordsMatch()) {
-      showError('Passwords do not match.');
-      return;
-    }
+  if (!doPasswordsMatch()) {
+    showError('Passwords do not match.');
+    return;
+  }
 
-    if (!areLengthsValid()) {
-      showError('Email or password is too long.');
-      return;
-    }
+  if (!areLengthsValid()) {
+    showError('Email or password is too long.');
+    return;
+  }
 
-    setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
-    final username = usernameController.text.trim();
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
+  final username = usernameController.text.trim();
+  final email = emailController.text.trim();
+  final password = passwordController.text.trim();
+  if (!isUsernameLengthValid(username)) {
+    setState(() => isLoading = false);
+    showError('Username must be between 1 and 10 characters.');
+    return;
+  }
 
-    // Check if username or email exists (Optional, based on your database setup)
-    bool usernameExists = await DatabaseService().isUsernameTaken(username);
-    bool emailExists = await DatabaseService().isEmailTaken(email);
+  // Check if username or email exists (Optional, based on your database setup)
+  bool usernameExists = await DatabaseService().isUsernameTaken(username);
+  bool emailExists = await DatabaseService().isEmailTaken(email);
 
-    if (usernameExists) {
-      setState(() => isLoading = false);
-      showError('Username is already taken.');
-      return;
-    }
+  if (usernameExists) {
+    setState(() => isLoading = false);
+    showError('Username is already taken.');
+    return;
+  }
 
-    if (emailExists) {
-      setState(() => isLoading = false);
-      showError('Email is already registered.');
-      return;
-    }
+  if (emailExists) {
+    setState(() => isLoading = false);
+    showError('Email is already registered.');
+    return;
+  }
 
-    try {
-      // Register the user with Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+  try {
+    // 1. Register the user with Firebase Auth
+    UserCredential userCredential = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
 
-      // Optional: Store additional user info in Firestore (username, year level, etc.)
+    // 2. Store additional user info in Firestore (uid, username, year level, department)
+    if (userCredential.user != null) {
       await DatabaseService().addUser(
+        uid: userCredential.user!.uid,
         username: username,
         email: email,
-        password: password, // Firebase Auth handles the password securely
         yearLevel: selectedYearLevel!,
         department: selectedDepartment!,
       );
+
+      // 3. Initialize the streak for the new user
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        'streak': 1, // Initialize streak to 1
+        'lastCheckedIn': Timestamp.fromDate(DateTime.now()), // Set the current date
+      }, SetOptions(merge: true)); // Merge to avoid overwriting existing data
+
+      // Optionally, update the Firebase Auth user’s display name (for example)
+      await userCredential.user!.updateDisplayName(username);
 
       setState(() => isLoading = false);
 
@@ -121,16 +140,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
                 );
               },
-              child: const Text('Go to Login'),
+              child: const Text('Log In'),
             ),
           ],
         ),
       );
-    } on FirebaseAuthException catch (e) {
-      setState(() => isLoading = false);
-      showError(e.message ?? 'An error occurred. Please try again.');
     }
+  } on FirebaseAuthException catch (e) {
+    setState(() => isLoading = false);
+    showError(e.message ?? 'An error occurred. Please try again.');
   }
+}
+
+
 
   void showError(String message) {
     showDialog(
@@ -142,6 +164,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Success'),
+        content: const Text('Account created successfully!'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+            child: const Text('Go to Login'),
           ),
         ],
       ),
@@ -215,128 +258,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           text: 'Create account',
                           passwordController: passwordController,
                           confirmPasswordController: confirmPasswordController,
-                          onSuccess: () async {
-                            if (usernameController.text.trim().isEmpty ||
-                                emailController.text.trim().isEmpty ||
-                                passwordController.text.trim().isEmpty ||
-                                confirmPasswordController.text.trim().isEmpty ||
-                                selectedYearLevel == null ||
-                                selectedDepartment == null) {
-                              // Handle if any field is left empty
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Error'),
-                                  content:
-                                      const Text('All fields are required.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return;
-                            }
-
-                            // Check if username or email already exists
-                            bool usernameExists = await DatabaseService()
-                                .isUsernameTaken(
-                                    usernameController.text.trim());
-                            bool emailExists = await DatabaseService()
-                                .isEmailTaken(emailController.text.trim());
-
-                            if (usernameExists) {
-                              // Username already taken
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Error'),
-                                  content:
-                                      const Text('Username is already taken.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return;
-                            }
-
-                            if (emailExists) {
-                              // Email already taken
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Error'),
-                                  content: const Text(
-                                      'Email is already registered.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return;
-                            }
-
-                            // If passwords match, save the user
-                            if (passwordController.text !=
-                                confirmPasswordController.text) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Error'),
-                                  content:
-                                      const Text('Passwords do not match.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return;
-                            }
-
-                            // Save user to Firestore
-                            await DatabaseService().addUser(
-                              username: usernameController.text.trim(),
-                              email: emailController.text.trim(),
-                              password: passwordController.text.trim(),
-                              yearLevel: selectedYearLevel!,
-                              department: selectedDepartment!,
-                            );
-
-                            // Navigate or show success
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Success'),
-                                content:
-                                    const Text('Account created successfully!'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const LoginScreen()),
-                                      );
-                                    },
-                                    child: const Text('Go to Login'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                          onSuccess: handleRegister,
                         ),
                   const SizedBox(height: 52),
                   Row(

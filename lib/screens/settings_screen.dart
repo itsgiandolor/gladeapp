@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
 import '../widgets/top_navbar.dart';
 import 'settings_screens/change_password.dart';
@@ -51,8 +52,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const ChangePasswordScreen()),
+                      MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
                     );
                   },
                 ),
@@ -61,8 +61,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const ManageEmailScreen()),
+                      MaterialPageRoute(builder: (context) => const ManageEmailScreen()),
                     );
                   },
                 ),
@@ -94,8 +93,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const ChangeThemeScreen()),
+                      MaterialPageRoute(builder: (context) => const ChangeThemeScreen()),
                     );
                   },
                 ),
@@ -127,9 +125,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              const EnableNotificationsScreen()),
+                      MaterialPageRoute(builder: (context) => const EnableNotificationsScreen()),
                     );
                   },
                 ),
@@ -138,8 +134,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const TaskReminderScreen()),
+                      MaterialPageRoute(builder: (context) => const TaskReminderScreen()),
                     );
                   },
                 ),
@@ -171,8 +166,7 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const AboutGladeScreen()),
+                      MaterialPageRoute(builder: (context) => const AboutGladeScreen()),
                     );
                   },
                 ),
@@ -181,31 +175,66 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const FeedbackScreen()),
+                      MaterialPageRoute(builder: (context) => const FeedbackScreen()),
                     );
                   },
                 ),
                 _buildDivider(),
-                const Padding(
-                  padding: EdgeInsets.only(top: 30),
+
+                // ✅ Logout with confirmation
+                Padding(
+                  padding: const EdgeInsets.only(top: 30),
                   child: Center(
-                    child: Text(
-                      'Log out',
-                      style: TextStyle(
-                        color: AppTheme.primaryPurple,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Roboto',
+                    child: GestureDetector(
+                      onTap: () {
+                        _showLogoutConfirmationDialog(context);
+                      },
+                      child: const Text(
+                        'Log out',
+                        style: TextStyle(
+                          color: AppTheme.primaryPurple,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Roboto',
+                        ),
                       ),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 389),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ✅ Logout confirmation dialog
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop(); // Close dialog
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+            },
+            child: const Text(
+              'Log out',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -219,26 +248,28 @@ class SettingsScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.black,
-                fontFamily: 'Roboto',
+            Expanded(  // Added Expanded to allow the text to take available space
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.black,
+                  fontFamily: 'Roboto',
+                ),
               ),
             ),
-            Image.network(
-              'https://cdn.builder.io/api/v1/image/assets/4be3b29efd7843b4b15f7d36716195c0/7659f0e5e29a7f9e0915e7cd711d165e7ad0e0f8?placeholderIfAbsent=true',
-              width: 28,
-              height: 28,
-              fit: BoxFit.contain,
+            const Icon(  // Replace Image.network with Icon for the arrow
+              Icons.arrow_forward_ios,  // Arrow icon
+              size: 20,  // Adjust size if needed
+              color: AppTheme.primaryPurple,  // Set color to match your theme
             ),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildDivider() {
     return Container(
