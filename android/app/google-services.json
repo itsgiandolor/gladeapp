@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "277517106757",
+    "project_id": "glade-app-4c7dd",
+    "storage_bucket": "glade-app-4c7dd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277517106757:android:f423f3a4032c7b69a32d2c",
+        "android_client_info": {
+          "package_name": "com.example.gladeapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIO4OeSoaZSAiGZir9tEXSC6HhOFIjkVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
